@@ -108,3 +108,52 @@ ggplot(data_long, aes(x = population / 1e6, y = temperature, color = range)) +
   )
 ```
 ![plot](plot2.jpg)
+
+## Ex. 3
+#### Importing packages and reading the file
+```
+library(dplyr)
+library(ggpattern)
+
+eyes <- read.csv('https://raw.githubusercontent.com/Whereamiactually/R/main/Couple%20Eye%20Colors.csv')
+```
+#### I'm removing all the pairs with the same eye colour
+```
+eyes <- eyes %>%
+  filter(self_male != partner_female)
+```
+#### Adding a column with the joined colours
+```
+sub <- function(a)
+  a = str_sub(a, 1, 2)
+
+eyes <- eyes %>%
+  mutate(couple = paste(sub(self_male), sub(partner_female), sep = "_"))
+```
+#### Countimg the values
+```
+count_eyes <- eyes %>%
+  group_by(couple, self_male, partner_female) %>%
+  summarize(count = n(), .groups = 'drop')
+```
+#### The plot
+```
+count_eyes %>%
+  ggplot(aes(x = couple, y = count, fill = self_male, colour = partner_female)) +
+  geom_col_pattern(aes(pattern_fill = partner_female), 
+                   position = "stack", 
+                   pattern = "stripe", 
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("brown" = "brown", 
+                               "blue" = "blue", 
+                               "green" = "green" ))+
+  scale_pattern_fill_manual(values = c("brown" = "brown", 
+                                       "blue" = "blue", 
+                                       "green" = "green" ))+
+  labs(title = "Number of Couples with Different Eye Colors",
+       x = "Eye Colors",
+       y = "Number of Couples")
+```
+
+![plot](plot3.jpg)
